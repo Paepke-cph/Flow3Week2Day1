@@ -1,119 +1,49 @@
 import React from "react";
-import './style2.css'
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  NavLink
+  Link,
+  useParams,
+  useRouteMatch
 } from "react-router-dom";
-
+import './style2.css';
 import App2 from './App2';
 import App3 from './App3';
 
-// This site has 3 pages, all of which are rendered
-// dynamically in the browser (not server rendered).
-//
-// Although the page does not ever refresh, notice how
-// React Router keeps the URL up to date as you navigate
-// through the site. This preserves the browser history,
-// making sure things like the back button and bookmarks
-// work properly.
-
-export default function BasicExample() {
+export default function NestingExample(props) {
   return (
-    <CustomRouter/>
-  );
-}
-
-const CustomRouter = () => {
-  return(
     <Router>
       <div>
-        <ExerciseHeader/>
-        <hr/>
-        <div className="content">
-          <Switch>
-            <Route exact path="/">
-              <Home/>
-            </Route>
-            <Route path="/exercise1">
-              <App2/>
-            </Route>
-            <Route path="/exercise2">
-              <App3/>
-            </Route>
-          </Switch>
-        </div>
+        <ul className="header">
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/topics">Topics</Link>
+          </li>
+          <li>
+            <Link to="/exercises">Exercises</Link>
+          </li>
+        </ul>
+        <hr />
+
+        <Switch>
+          <Route exact path="/">
+            <Home />
+          </Route>
+          <Route path="/topics">
+            <Topics info={props.info}/>
+          </Route>
+          <Route path="/exercises">
+            <Exercises/>
+          </Route>
+        </Switch>
       </div>
     </Router>
   );
 }
 
-const ExerciseHeader = () => {
-  return (
-    <ul className="header">
-      <li>
-        <NavLink exact activeClassName="selected" to="/">Home</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/exercise1">Exercise 1</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/exercise2">Exercise 2</NavLink>
-      </li>
-    </ul>
-  );  
-}
-
-
-const DefaultRouter = () => {
-  return (
-    <Router>
-      <div>
-        <Header/>
-        <hr/>
-        {/*
-          A <Switch> looks through all its children <Route>
-          elements and renders the first one whose path
-          matches the current URL. Use a <Switch> any time
-          you have multiple routes, but you want only one
-          of them to render at a time
-        */}
-        <div className="content">
-          <Switch>
-            <Route exact path="/">
-              <Home />
-            </Route>
-            <Route path="/about">
-              <About />
-            </Route>
-            <Route path="/dashboard">
-              <Dashboard />
-            </Route>
-          </Switch>
-        </div>
-      </div>
-    </Router>
-  );
-}
-
-// You can think of these components as "pages"
-// in your app.
-function Header() {
-  return (
-    <ul className="header">
-      <li>
-        <NavLink exact activeClassName="selected" to="/">Home</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/about">About</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/dashboard">Dashboard</NavLink>
-      </li>
-    </ul>
-  );
-}
 function Home() {
   return (
     <div>
@@ -121,17 +51,77 @@ function Home() {
     </div>
   );
 }
-function About() {
+
+const Exercises = () => {
+  let {path ,url} = useRouteMatch();
+  return(
+    <div>
+      <h2>Exercises</h2>
+      <ul>
+        <li>
+          <Link to={`${url}/exercise1`}>Exercise 1</Link>
+        </li>
+        <li>
+          <Link to={`${url}/exercise2`}>Exercise 2</Link>
+        </li>
+      </ul>
+      <Switch>
+        <Route exact path={path}>
+          <h3>Please select a exercise.</h3>
+        </Route>
+        <Route path={`${path}/:exerciseId`}>
+          <Exercise/>
+        </Route>
+      </Switch>
+    </div>    
+  );
+}
+
+function Exercise() {
+  let { exerciseId} = useParams();
+  let app;
+  if(exerciseId === "exercise1") app = <App2/>
+  if(exerciseId === "exercise2") app = <App3/>
+  return (
+    app
+  );
+}
+
+function Topics(props) {
+  let { path, url } = useRouteMatch();
   return (
     <div>
-      <h2>About</h2>
+      <h2>Topics</h2>
+      <ul>
+        {props.info.map(
+          ({id,title,info}) => {
+            return (
+              <li key={id}>
+                <Link to={`${url}/${id}`}>{title}</Link>
+              </li>
+            );
+          }
+        )}
+      </ul>
+      <Switch>
+        <Route exact path={path}>
+          <h3>Please select a topic.</h3>
+        </Route>
+        <Route path={`${path}/:topicId`}>
+          <Topic info={props.info}/>
+        </Route>
+      </Switch>
     </div>
   );
 }
-function Dashboard() {
+
+function Topic(props) {
+  let {topicId} = useParams();
+  let myInfo = props.info.find(({id}) => {return id === topicId});
   return (
     <div>
-      <h2>Dashboard</h2>
+      <h3>{topicId}</h3>
+      <h4>{myInfo.info}</h4>
     </div>
   );
 }
