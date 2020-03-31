@@ -1,137 +1,73 @@
-import React from "react";
-import './style2.css'
+import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  NavLink
+  NavLink,
+  useParams,
+  useRouteMatch,
+  useHistory,
+  Redirect
 } from "react-router-dom";
 
-import App2 from './App2';
-import App3 from './App3';
+import Home from './components/Home';
+import Products from './components/Products';
+import Company from './components/Company';
+import NoMatch from './components/NoMatch';
+import AddBook from './components/AddBook';
+import FindBook from './components/FindBook';
+import Login from './components/Login';
 
-// This site has 3 pages, all of which are rendered
-// dynamically in the browser (not server rendered).
-//
-// Although the page does not ever refresh, notice how
-// React Router keeps the URL up to date as you navigate
-// through the site. This preserves the browser history,
-// making sure things like the back button and bookmarks
-// work properly.
-
-export default function BasicExample() {
+export default function App({bookFacade}) {
+  const [loggedIn, setLoggedIn] = useState(false);
   return (
-    <CustomRouter/>
+    <div>
+      <Router>
+        <Header loggedIn={loggedIn} />
+        <MainSwitch bookFacade={bookFacade} loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>
+      </Router>
+    </div>
   );
 }
 
-const CustomRouter = () => {
-  return(
-    <Router>
-      <div>
-        <ExerciseHeader/>
-        <hr/>
-        <div className="content">
-          <Switch>
-            <Route exact path="/">
-              <Home/>
-            </Route>
-            <Route path="/exercise1">
-              <App2/>
-            </Route>
-            <Route path="/exercise2">
-              <App3/>
-            </Route>
-          </Switch>
-        </div>
-      </div>
-    </Router>
-  );
-}
-
-const ExerciseHeader = () => {
-  return (
+const Header = ({loggedIn}) => {
+  return(  
     <ul className="header">
-      <li>
-        <NavLink exact activeClassName="selected" to="/">Home</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/exercise1">Exercise 1</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/exercise2">Exercise 2</NavLink>
-      </li>
-    </ul>
-  );  
-}
-
-
-const DefaultRouter = () => {
-  return (
-    <Router>
-      <div>
-        <Header/>
-        <hr/>
-        {/*
-          A <Switch> looks through all its children <Route>
-          elements and renders the first one whose path
-          matches the current URL. Use a <Switch> any time
-          you have multiple routes, but you want only one
-          of them to render at a time
-        */}
-        <div className="content">
-          <Switch>
-            <Route exact path="/">
-              <Home />
-            </Route>
-            <Route path="/about">
-              <About />
-            </Route>
-            <Route path="/dashboard">
-              <Dashboard />
-            </Route>
-          </Switch>
-        </div>
-      </div>
-    </Router>
-  );
-}
-
-// You can think of these components as "pages"
-// in your app.
-function Header() {
-  return (
-    <ul className="header">
-      <li>
-        <NavLink exact activeClassName="selected" to="/">Home</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/about">About</NavLink>
-      </li>
-      <li>
-        <NavLink activeClassName="selected" to="/dashboard">Dashboard</NavLink>
-      </li>
+      <li><NavLink exact activeClassName="active" to="/">Home</NavLink></li>
+      <li><NavLink activeClassName="active" to="/products">Products</NavLink></li>
+      <li hidden={!loggedIn}><NavLink activeClassName="active" to="/add-book">Add Book</NavLink></li>
+      <li hidden={!loggedIn}><NavLink activeClassName="active" to="/find-book">Find Book</NavLink></li>
+      <li><NavLink activeClassName="active" to="/company">Company</NavLink></li>
+      <li hidden={loggedIn}><NavLink activeClassName="active" to="/login">Login</NavLink></li>
+      <li hidden={!loggedIn}><NavLink activeClassName="active" to="/login">Logout</NavLink></li>
     </ul>
   );
-}
-function Home() {
+};
+
+const MainSwitch = ({bookFacade, loggedIn, setLoggedIn}) => {
   return (
-    <div>
-      <h2>Home</h2>
-    </div>
+    <Switch>
+      <Route exact path="/">
+        <Home/>
+      </Route>
+      <Route path="/products">
+        <Products bookFacade={bookFacade}/>
+      </Route>
+      <Route path="/company">
+        <Company />
+      </Route>
+      <Route path="/add-book">
+        <AddBook bookFacade={bookFacade}/>
+      </Route>
+      <Route path="/find-book">
+        <FindBook bookFacade={bookFacade}/>
+      </Route>
+      <Route path="/login">
+        <Login loggedIn={loggedIn} setLoggedIn={setLoggedIn}/>
+      </Route>
+      <Route>
+        <NoMatch />
+      </Route>
+    </Switch>
   );
-}
-function About() {
-  return (
-    <div>
-      <h2>About</h2>
-    </div>
-  );
-}
-function Dashboard() {
-  return (
-    <div>
-      <h2>Dashboard</h2>
-    </div>
-  );
-}
+};
